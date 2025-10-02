@@ -97,7 +97,7 @@ def get_latest_file(bucket, prefixes, substring="GLB-5"):
     return None
 
 
-def download_scampr(config: str | os.PathLike):
+def download_scampr(config: str | os.PathLike, time: str = None):
     now = datetime.now(UTC)
     now_1 = now - timedelta(hours=1)
     print(f"Initializing download at {now:%m-%d %H:%M}")
@@ -107,12 +107,19 @@ def download_scampr(config: str | os.PathLike):
     clip = cfg.get('clip')
     prefix = cfg.get('prefix').format(datestring=now.strftime('%Y/%m/%d/%H'))
     prefix_1 = cfg.get('prefix').format(datestring=now_1.strftime('%Y/%m/%d/%H'))
-    prefixes = [prefix, prefix_1]
-    latest_obj = get_latest_file(bucket_name, prefixes)
     local_dir = cfg.get('local_storage_dir')
 
+    if time:
+        time_dt = datetime.strptime(time, "%Y%m%d%H%M")
+        prefix = cfg.get('prefix').format(datestring=time_dt.strftime('%Y/%m/%d/%H'))
+        latest_obj = get_latest_file(bucket_name, [prefix], time)
+        print(f"Found requested time: {latest_obj['Key']}")
+    else:
+        prefixes = [prefix, prefix_1]
+        latest_obj = get_latest_file(bucket_name, prefixes)
+
     if latest_obj:
-        print(f"Latest data is {latest_obj['Key']}")
+        print(f"Processing data: {latest_obj['Key']}")
         filename_aws = os.path.basename(latest_obj["Key"])
         timestamp = filename_aws.split("_")[3][1:]
 
@@ -148,5 +155,9 @@ def download_scampr(config: str | os.PathLike):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download SCaMPR data from AWS S3")
     parser.add_argument('-c', '--config', type=str, required=True, help='Path to config file')
+    parser.add_argument('-t', '--time', type=str, required=False, help='Time in format YYYYMMDDHHMM to download specific file')
     args = parser.parse_args()
-    download_scampr(args.config)
+    if args.time:
+        download_scampr(args.config, args.time)
+    else:
+        download_scampr(args.config)

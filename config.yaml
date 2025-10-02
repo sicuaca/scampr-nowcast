@@ -1,0 +1,6 @@
+bucket_name: noaa-enterprise-rainrate-pds
+prefix: BLEND/RainRate-Blend-INST/{datestring} #datestring in %Y/%m/%d/%H format
+product: GLB-5
+clip: [25,-25,70,165] #north, south, west, east
+local_storage_dir: D:/Projects/scampr-nowcasting/data
+filename_template: scampr_indonesia_{datestring}.nc

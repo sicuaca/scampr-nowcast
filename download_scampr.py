@@ -4,6 +4,7 @@ import sys
 import argparse
 import boto3
 import yaml
+import json
 from botocore import UNSIGNED
 from botocore.config import Config
 
@@ -150,6 +151,17 @@ def download_scampr(config: str | os.PathLike, time: str = None):
     filename = cfg.get('filename_template').format(datestring=file_datestring)
     output_file = os.path.join(local_dir, filename)
     ds.to_netcdf(output_file)
+
+    if not time:
+        print("Writing latest_file_available.json")
+        latest_info = {
+            "latest_filename": filename,
+            "file_path": output_file,
+            "time_coverage_start": file_datestring,
+        }
+        latest_file = os.path.join(local_dir, "latest_file_available.json")
+        with open(latest_file, 'w') as f:
+            json.dump(latest_info, f, indent=4)
 
 
 if __name__ == "__main__":

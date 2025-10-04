@@ -1,4 +1,3 @@
-#!/home/metpublic/PYTHON_VENV/nowcasting_weather/bin/python
 import xarray
 from datetime import datetime, timedelta
 import json
@@ -6,8 +5,8 @@ import yaml
 import os
 import argparse
 
-DOMAIN_DICT = '/home/metpublic/PYTHON_SCRIPT/scampr-nowcast/domain_boundary.yaml'
-LATEST_FILE_INFO = '/home/metpublic/DATA_REPOS/SCAMPR/latest_file_available.json'
+DOMAIN_DICT = 'D:\\Projects\\scampr-nowcasting\\domain_boundary.yaml'
+LATEST_FILE_INFO = 'D:\\Projects\\scampr-nowcasting\\data\\latest_file_available.json'
 
 
 def read_config(config: os.PathLike | str) -> dict:

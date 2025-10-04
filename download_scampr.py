@@ -16,7 +16,7 @@ import numpy as np
 
 
 def read_config(config: os.PathLike) -> dict:
-    required_keys = ['bucket_name', 'prefix', 'product', 'local_storage_dir', 'filename_template']
+    required_keys = ['bucket_name', 'prefix', 'product', 'nc_storage_dir', 'nc_filename_template']
     with open(config, 'r') as f:
         cfg = yaml.safe_load(f)
     for key in required_keys:
@@ -64,7 +64,7 @@ def transform_data(data, clip=None):
 
     if clip:
         north, south, west, east = clip
-        ds_clip = ds['RRQPE'].sel(
+        ds_clip = ds.sel(
             lon=slice(west, east),
             lat=slice(north, south))
         ds_clip.attrs = ds.attrs.copy()
@@ -108,7 +108,7 @@ def download_scampr(config: str | os.PathLike, time: str = None):
     clip = cfg.get('clip')
     prefix = cfg.get('prefix').format(datestring=now.strftime('%Y/%m/%d/%H'))
     prefix_1 = cfg.get('prefix').format(datestring=now_1.strftime('%Y/%m/%d/%H'))
-    local_dir = cfg.get('local_storage_dir')
+    local_dir = cfg.get('nc_storage_dir')
 
     if time:
         time_dt = datetime.strptime(time, "%Y%m%d%H%M")
@@ -125,7 +125,7 @@ def download_scampr(config: str | os.PathLike, time: str = None):
         timestamp = filename_aws.split("_")[3][1:]
 
         if clip:
-            filename_check = cfg.get('filename_template').format(datestring=timestamp)
+            filename_check = cfg.get('nc_filename_template').format(datestring=timestamp)
             local_file = os.path.join(local_dir, filename_check)
         else:
             local_file = os.path.join(local_dir, filename_aws)
@@ -148,9 +148,9 @@ def download_scampr(config: str | os.PathLike, time: str = None):
     print("Saving to netcdf")
     file_datestring = datetime.strptime(ds.attrs['time_coverage_start'], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H%M000")
 
-    filename = cfg.get('filename_template').format(datestring=file_datestring)
+    filename = cfg.get('nc_filename_template').format(datestring=file_datestring)
     output_file = os.path.join(local_dir, filename)
-    ds.to_netcdf(output_file)
+    ds.to_netcdf(output_file, format='NETCDF4')
 
     if not time:
         print("Writing latest_file_available.json")

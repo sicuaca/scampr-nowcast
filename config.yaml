@@ -9,4 +9,16 @@ nc_filename_template: scampr_indonesia_{datestring}.nc
 ## This part is for clipping and converting netCDF to GeoTIFF
 tif_storage_dir: D:/Projects/scampr-nowcasting/data/tif
 tif_filename_template: rrqpe_{domain}_{datestring}.tif
-domain: Kalsel #choose from domain_boundary.yaml
+domain: kalsel #choose from domain_boundary.yaml
+
+## This part is for setting up nowcasting run
+model_config:
+  method: steps
+  n_input_frames: 12
+  n_leadtimes: 18
+  n_ens_members: 20
+  km_per_pixel: 2.0
+  timestep: 10 #in minutes
+  precip_thr: -10.0
+nowcast_output_storage_dir: D:/Projects/scampr-nowcasting/data/output/{domain}
+nowcast_output_filename_template: scampr_{method}_{domain}_{base_time}.nc

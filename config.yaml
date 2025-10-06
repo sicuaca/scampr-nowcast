@@ -3,10 +3,10 @@ bucket_name: noaa-enterprise-rainrate-pds
 prefix: BLEND/RainRate-Blend-INST/{datestring} #datestring in %Y/%m/%d/%H format
 product: GLB-5
 clip: [25,-25,70,165] #north, south, west, east
-nc_storage_dir: /home/metpublic/DATA_REPOS/SCAMPR
+nc_storage_dir: D:/Projects/scampr-nowcasting/data
 nc_filename_template: scampr_indonesia_{datestring}.nc
 
 ## This part is for clipping and converting netCDF to GeoTIFF
-tif_storage_dir: /home/metpublic/DATA_REPOS/SCAMPR/tif
+tif_storage_dir: D:/Projects/scampr-nowcasting/data/tif
 tif_filename_template: rrqpe_{domain}_{datestring}.tif
 domain: Kalsel #choose from domain_boundary.yaml

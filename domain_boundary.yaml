@@ -1,117 +1,117 @@
-Aceh:
+aceh:
   boundary: [6.5, 1.5, 94, 99]
   name: "Aceh"
-Sumut:
+sumut:
   boundary: [5, -1, 96, 102]
   name: "Sumatera Utara"
-Sumbar:
+sumbar:
   boundary: [1.5, -3.5, 97.5, 102.5]
   name: "Sumatera Barat"
-Riau:
+riau:
   boundary: [3.5, -2, 99, 104.5]
   name: "Riau"
-Jambi:
+jambi:
   boundary: [0.5, -3.5, 100.5, 104.5]
   name: "Jambi"
-Babel:
+babel:
   boundary: [-0.5, -4.5, 104.5, 109.5]
   name: "Bangka-Belitung"
-Sumsel:
+sumsel:
   boundary: [-0.5, -5.5, 101.5, 106.5]
   name: "Sumatera Selatan"
-Bengkulu:
+bengkulu:
   boundary: [-1.5, -5.5, 100.5, 104.5]
   name: "Bengkulu"
-Lampung:
+lampung:
   boundary: [-3, -7, 103, 107]
   name: "Lampung"
-Kalbar:
+kalbar:
   boundary: [3, -3.5, 108, 114.5]
   name: "Kalimantan Barat"
-Kalteng:
+kalteng:
   boundary: [2, -4.5, 110, 116.5]
   name: "Kalimantan Tengah"
-Kalsel:
+kalsel:
   boundary: [-1, -5, 113.5, 117.5]
   name: "Kalimantan Selatan"
-Kaltim:
+kaltim:
   boundary: [3.8, -3.2, 113, 120]
   name: "Kalimantan Timur"
-Kaltara:
+kaltara:
   boundary: [5.5, 0.5, 114, 119]
   name: "Kalimantan Utara"
-Banten:
+banten:
   boundary: [-5.5, -7.5, 105, 107]
   name: "Banten"
-Jakarta:
+jakarta:
   boundary: [-5.7, -6.9, 106.2, 107.4]
   name: "Jakarta Raya"
-Jabar:
+jabar:
   boundary: [-5, -8, 106, 109]
   name: "Jawa Barat"
-Jateng:
+jateng:
   boundary: [-5.5, -9, 109, 113]
   name: "TMC Jawa Tengah"
-Jatim:
+jatim:
   boundary: [-5.5, -9.5, 110.5, 115]
   name: "Jawa Timur"
-Yogyakarta:
+yogyakarta:
   boundary: [-7.3, -8.5, 109.8, 111]
   name: "Yogyakarta"
-Bali:
+bali:
   boundary: [-7.5, -9.5, 114, 116]
   name: "Bali"
-NTT:
+ntt:
   boundary: [-5.5, -12, 118.5, 126.5]
   name: "Nusa Tenggara Timur"
-NTB:
+ntb:
   boundary: [-6.7, -10.3, 115.7, 119.6]
   name: "Nusa Tenggara Barat"
-Sulut:
+sulut:
   boundary: [3, -0.5, 118.5, 126.5]
   name: "Sulawesi Utara"
-Gorontalo:
+gorontalo:
   boundary: [2.5, -1, 120.5, 124]
   name: "Gorontalo"
-Sulteng:
+sulteng:
   boundary: [2, -3.5, 118.2, 124.3]
   name: "Sulawesi Tengah"
-Sulbar:
+sulbar:
   boundary: [0, -4, 117.5, 121.5]
   name: "Sulawesi Barat"
-Sultra:
+sultra:
   boundary: [-2, -6.5, 120, 124.5]
   name: "Sulawesi Tenggara"
-Sulsel:
+sulsel:
   boundary: [-1.5, -6.5, 118, 122]
   name: "Sulawesi Selatan"
-Malut:
+malut:
   boundary: [3, -2.5, 125.5, 131]
   name: "Maluku Utara"
-Maluku:
+maluku:
   boundary: [-0.5, -9.5, 124, 131]
   name: "Maluku"
-Pabar:
+pabar:
   boundary: [2, -5, 129, 136]
   name: "Irian Jaya Barat"
-Papua:
+papua:
   boundary: [0.5, -9.5, 132.5, 142.5]
   name: "Papua"
-Indonesia:
+indonesia:
   boundary: [10, -15, 93, 142]
   name: "Indonesia"
-Region1:
+region1:
   boundary: [10, -10, 90, 110]
   name: "Region1"
-Region2:
+region2:
   boundary: [8, -12, 100, 120]
   name: "Region2"
-Region3:
+region3:
   boundary: [7, -13, 110, 130]
   name: "Region3"
-Region4:
+region4:
   boundary: [5, -15, 120, 140]
   name: "Region4"
-Region5:
+region5:
   boundary: [5, -15, 130, 150]
   name: "Region5"

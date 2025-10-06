@@ -10,7 +10,7 @@ from botocore import UNSIGNED
 from botocore.config import Config
 
 from datetime import datetime, timedelta
-#from datetime import UTC
+from datetime import UTC
 import io
 import xarray as xr
 import numpy as np
@@ -99,12 +99,17 @@ def get_latest_file(bucket, prefixes, substring="GLB-5"):
     return None
 
 
-def download_scampr(config: str | os.PathLike, time: str = None):
-    now = datetime.utcnow()
+def download_scampr(config: dict| str | os.PathLike, time: str = None):
+    now = datetime.now(UTC)
+    now = now.replace(minute=(now.minute // 10) * 10, second=0, microsecond=0)
     now_1 = now - timedelta(hours=1)
     print(f"Initializing download at {now:%m-%d %H:%M}")
 
-    cfg = read_config(config)
+    if isinstance(config, dict):
+        cfg = config
+    else:
+        cfg = read_config(config)
+
     bucket_name = cfg.get('bucket_name')
     clip = cfg.get('clip')
     prefix = cfg.get('prefix').format(datestring=now.strftime('%Y/%m/%d/%H'))
@@ -112,7 +117,7 @@ def download_scampr(config: str | os.PathLike, time: str = None):
     local_dir = cfg.get('nc_storage_dir')
 
     if time:
-        time_dt = datetime.strptime(time, "%Y%m%d%H%M")
+        time_dt = datetime.strptime(time, "%Y%m%d%H%M000")
         prefix = cfg.get('prefix').format(datestring=time_dt.strftime('%Y/%m/%d/%H'))
         latest_obj = get_latest_file(bucket_name, [prefix], time)
         print(f"Found requested time: {latest_obj['Key']}")

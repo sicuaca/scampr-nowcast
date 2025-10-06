@@ -126,8 +126,8 @@ def run_nowcasting(config: os.PathLike | str, tif_files: None | os.PathLike | st
     R, metadata_db = transformation.dB_transform(R, threshold=0.1, zerovalue=-15.0)
     R[~np.isfinite(R)] = -15.0
 
-    n_input_files = model_config['n_input_files']
-    V = dense_lucaskanade(R[-n_input_files:, :, :])
+    n_input_frames = model_config['n_input_frames']
+    V = dense_lucaskanade(R[-n_input_frames:, :, :])
     V[~np.isfinite(V)] = 0.0
     max_velocity = 100
     V[V > max_velocity] = max_velocity
@@ -135,7 +135,7 @@ def run_nowcasting(config: os.PathLike | str, tif_files: None | os.PathLike | st
 
     method = model_config.get('method', 'steps')
     n_leadtimes = model_config['n_leadtimes']
-    n_ens_members = model_config['n_ens_member']
+    n_ens_members = model_config['n_ens_members']
     km_per_pixel = model_config['km_per_pixel']
     timestep = model_config['timestep']
     precip_thr = model_config.get('precip_thr', -10.0)
@@ -155,7 +155,6 @@ def run_nowcasting(config: os.PathLike | str, tif_files: None | os.PathLike | st
     if processed_output:
         ds = compute_ensemble(ds)
 
-    print(cfg)
     output_path = cfg.get('nowcast_output_storage_dir')
     output_path = output_path.format(domain=domain.lower())
     os.makedirs(output_path, exist_ok=True)
@@ -167,7 +166,7 @@ def run_nowcasting(config: os.PathLike | str, tif_files: None | os.PathLike | st
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run nowcasting using pysteps.")
-    parser.add_argument('--config', type=str, required=True, help="Path to the configuration YAML file.")
+    parser.add_argument('-c','--config', type=str, required=True, help="Path to the configuration YAML file.")
     parser.add_argument('--tif_files', type=str, default=None,
                         help="Path to JSON file containing list of GeoTIFF files or a comma-separated list of file paths. If not provided, it will use the default path in the script.")
     parser.add_argument('--processed_output', action='store_true',
@@ -182,5 +181,5 @@ if __name__ == '__main__':
             tif_files_input = args.tif_files.split(',')
 
     ds_nowcast = run_nowcasting(config=args.config, tif_files=tif_files_input,
-                                processed_output=not args.no_processed_output)
+                                processed_output=not args.processed_output)
     print(ds_nowcast)

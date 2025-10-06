@@ -1,3 +1,4 @@
+#!/home/metpublic/PYTHON_VENV/nowcasting_weather/bin/python
 import os
 import sys
 
@@ -9,7 +10,7 @@ from botocore import UNSIGNED
 from botocore.config import Config
 
 from datetime import datetime, timedelta
-from datetime import UTC
+#from datetime import UTC
 import io
 import xarray as xr
 import numpy as np
@@ -99,7 +100,7 @@ def get_latest_file(bucket, prefixes, substring="GLB-5"):
 
 
 def download_scampr(config: str | os.PathLike, time: str = None):
-    now = datetime.now(UTC)
+    now = datetime.utcnow()
     now_1 = now - timedelta(hours=1)
     print(f"Initializing download at {now:%m-%d %H:%M}")
 

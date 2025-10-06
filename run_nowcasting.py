@@ -88,9 +88,15 @@ def compute_ensemble(ds: xr.Dataset) -> xr.Dataset:
     return ds_ens
 
 
-def run_nowcasting(config: os.PathLike | str, tif_files: None | os.PathLike | str | list[str] = TIF_FILE_LIST,
+def run_nowcasting(config: os.PathLike | str|dict, tif_files: None | os.PathLike | str | list[str] = TIF_FILE_LIST,
                    processed_output=True) -> xr.Dataset:
-    cfg = read_config(config)
+
+    #identify config input type
+    if isinstance(config, dict):
+        cfg = config
+    else:
+        cfg = read_config(config)
+
     domain = cfg['domain'].lower()
     model_config = cfg['model_config']
 

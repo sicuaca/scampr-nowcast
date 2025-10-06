@@ -6,8 +6,8 @@ import yaml
 import os
 import argparse
 
-DOMAIN_DICT = '/home/metpublic/PYTHON_SCRIPT/scampr-nowcast/domain_boundary.yaml'
-LATEST_FILE_INFO = '/home/metpublic/DATA_REPOS/SCAMPR/latest_file_available.json'
+DOMAIN_DICT = 'D:/Projects/scampr-nowcasting/domain_boundary.yaml'
+LATEST_FILE_INFO = 'D:/Projects/scampr-nowcasting/data/latest_file_available.json'
 
 
 def read_config(config: os.PathLike | str) -> dict:
@@ -32,9 +32,14 @@ def read_domain_dictionary(domain: os.PathLike | str) -> dict:
     return domain_dict
 
 
-def convert_tiff(config: str | os.PathLike, time: str = None):
+def convert_tiff(config: dict | str | os.PathLike, time: str = None):
     print("Converting NetCDF to GeoTIFF...")
-    cfg = read_config(config)
+
+    if isinstance(config, dict):
+        cfg = config
+    else:
+        cfg = read_config(config)
+
     domain_dict = read_domain_dictionary(DOMAIN_DICT)
     nc_dir = cfg['nc_storage_dir']
     nc_filename = cfg['nc_filename_template']
@@ -51,9 +56,8 @@ def convert_tiff(config: str | os.PathLike, time: str = None):
         except FileNotFoundError:
             raise FileNotFoundError(f"Latest file info not found at {LATEST_FILE_INFO}")
     else:
-        file_datestring = datetime.strptime(time, '%Y%m%d%H%M').strftime('%Y%m%d%H%M000')
+        file_datestring = datetime.strptime(time, '%Y%m%d%H%M000').strftime('%Y%m%d%H%M000')
         latest_file_path = f"{nc_dir}/{nc_filename.format(datestring=file_datestring)}"
-
 
     print(f"Processing file: {latest_file_path}")
     ds = xarray.open_dataset(latest_file_path, engine='netcdf4')

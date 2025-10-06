@@ -54,6 +54,7 @@ def convert_tiff(config: str | os.PathLike, time: str = None):
         file_datestring = datetime.strptime(time, '%Y%m%d%H%M').strftime('%Y%m%d%H%M000')
         latest_file_path = f"{nc_dir}/{nc_filename.format(datestring=file_datestring)}"
 
+
     print(f"Processing file: {latest_file_path}")
     ds = xarray.open_dataset(latest_file_path, engine='netcdf4')
     ds_clip = ds.sel(lat=slice(boundary[0], boundary[1]), lon=slice(boundary[2], boundary[3]))
@@ -78,7 +79,7 @@ def convert_tiff(config: str | os.PathLike, time: str = None):
     print("Saving to GeoTIFF...")
     file_datestring = datetime.strptime(ds.attrs['time_coverage_start'], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H%M000")
     filename = tif_filename.format(domain=domain.lower(), datestring=file_datestring)
-    tif_dir = os.path.join(tif_dir, domain.lower())
+    tif_dir = tif_dir.format(domain=domain.lower())
     os.makedirs(tif_dir, exist_ok=True)
     tif_file = f"{tif_dir}/{filename}"
     sliced.rio.to_raster(tif_file, compression='LZW', dtype='float32')

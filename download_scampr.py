@@ -137,7 +137,7 @@ def download_scampr(config: str | os.PathLike, time: str = None):
             data = io.BytesIO(obj["Body"].read())
         else:
             print(f"File already exists: {local_file}, skipping download.")
-            sys.exit(1)
+            return
 
     else:
         print("No matching files found")

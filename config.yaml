@@ -1,3 +1,10 @@
+## This part is for setting up the main task
+# run_mode options: auto or manual. If auto, the download_scampr task is already set to run automatically (using cron) separately,
+# the program will check the latest data available from generated latest_file_available.json.
+# If manual, the program will get the current time and try to download the latest data available from the source.
+run_mode: manual
+prior_steps: 12
+
 ## This part is for downloading and processing SCAMPR DATA
 bucket_name: noaa-enterprise-rainrate-pds
 prefix: BLEND/RainRate-Blend-INST/{datestring} #datestring in %Y/%m/%d/%H format

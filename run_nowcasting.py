@@ -166,7 +166,11 @@ def run_nowcasting(config: os.PathLike | str|dict, tif_files: None | os.PathLike
     os.makedirs(output_path, exist_ok=True)
     filename = cfg.get('nowcast_output_filename_template')
     filename = filename.format(method=method, domain=domain.lower(), base_time=base_time.strftime('%Y%m%d%H%M'))
-    ds.to_netcdf(os.path.join(output_path, filename), format='NETCDF4')
+    #nc compression
+    comp = dict(zlib=True, complevel=5)
+    encoding = {var: comp for var in ds.data_vars}
+
+    ds.to_netcdf(os.path.join(output_path, filename), format='NETCDF4', encoding=encoding)
     return ds
 
 

@@ -100,6 +100,8 @@ def main(config: os.PathLike | str, time: str = None):
 
     print("Running nowcasting model...")
     ds = run_nowcasting(cfg, tif_file_list_path, processed_output=True)
+    if ds:
+        print("Nowcasting completed successfully.")
     return ds
 
 

@@ -32,8 +32,8 @@ def read_config(config: os.PathLike | str) -> dict:
 def convert_to_dataset(data: np.ndarray, metadata: dict, base_time: datetime, timestep: int,
                        km_per_pixel: int | None) -> xr.Dataset:
     ens_index = [i + 1 for i in range(data.shape[0])]
-    time_index = [base_time + timedelta(minutes=timestep * i) for i in range(data.shape[1])]
-    leadtime_index = [timestep * i for i in range(data.shape[1])]
+    time_index = [base_time + timedelta(minutes=timestep * i) for i in range(1,data.shape[1]+1)]
+    leadtime_index = [timestep * i for i in range(1,data.shape[1]+1)]
     nx = data.shape[3]
     ny = data.shape[2]
 
@@ -89,7 +89,7 @@ def compute_ensemble(ds: xr.Dataset) -> xr.Dataset:
 
 
 def run_nowcasting(config: os.PathLike | str|dict, tif_files: None | os.PathLike | str | list[str] = TIF_FILE_LIST,
-                   processed_output=True) -> xr.Dataset:
+                   processed_output=True) -> (str,xr.Dataset):
 
     #identify config input type
     if isinstance(config, dict):
@@ -133,6 +133,9 @@ def run_nowcasting(config: os.PathLike | str|dict, tif_files: None | os.PathLike
     R[~np.isfinite(R)] = -15.0
 
     n_input_frames = model_config['n_input_frames']
+    if R.shape[0] < n_input_frames:
+        n_input_frames = R.shape[0]
+
     V = dense_lucaskanade(R[-n_input_frames:, :, :])
     V[~np.isfinite(V)] = 0.0
     max_velocity = 100
@@ -167,11 +170,11 @@ def run_nowcasting(config: os.PathLike | str|dict, tif_files: None | os.PathLike
     filename = cfg.get('nowcast_output_filename_template')
     filename = filename.format(method=method, domain=domain.lower(), base_time=base_time.strftime('%Y%m%d%H%M'))
     #nc compression
-    comp = dict(zlib=True, complevel=5)
+    comp = dict(zlib=True, complevel=8)
     encoding = {var: comp for var in ds.data_vars}
 
-    ds.to_netcdf(os.path.join(output_path, filename), format='NETCDF4', encoding=encoding)
-    return ds
+    ds.to_netcdf(os.path.join(output_path, filename), format='NETCDF4', encoding=encoding, engine='netcdf4')
+    return os.path.join(output_path, filename), ds
 
 
 if __name__ == '__main__':

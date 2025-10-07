@@ -1,6 +1,7 @@
 from download_scampr import download_scampr
 from convert_tiff import convert_tiff
 from run_nowcasting import run_nowcasting
+from generate_png_layer import generate_png_layer
 
 from datetime import datetime, timedelta, UTC
 import yaml
@@ -11,6 +12,7 @@ import argparse
 DOMAIN_DICT = 'D:\\Projects\\scampr-nowcasting\\domain_boundary.yaml'
 LATEST_FILE_INFO = 'D:\\Projects\\scampr-nowcasting\\data\\latest_file_available.json'
 TIF_FILE_LIST = 'D:\\Projects\\scampr-nowcasting\\data\\tif\\{domain}\\tif_file_list.json'
+LATEST_NOWCAST_INFO = 'D:\\Projects\\scampr-nowcasting\\data\\{domain}\\latest_nowcast_available.json'
 
 
 def read_config(config:os.PathLike|str)->dict:
@@ -74,6 +76,7 @@ def main(config: os.PathLike | str, time: str = None):
     if all([os.path.exists(f) for f in tif_files]):
         print("All tif files already exist.")
     else:
+        print("Checking for missing files")
         # check missing tif files
         missing_tif_files = [f for f in tif_files if not os.path.exists(f)]
         # take time string from filename
@@ -91,6 +94,21 @@ def main(config: os.PathLike | str, time: str = None):
                     tif_files.remove(f)
 
     print(f"Tif files ready: {tif_files}")
+    #check latest tif file time and modify base time
+    latest_tif_time_str = os.path.basename(tif_files[-1]).split('_')[2].split('.')[0]
+    latest_tif_time = datetime.strptime(latest_tif_time_str, '%Y%m%d%H%M000').replace(tzinfo=UTC)
+    if latest_tif_time != base_time:
+        print(f"Adjusting base_time from {base_time} to {latest_tif_time} based on latest tif file.")
+        base_time = latest_tif_time
+
+    #check if at least 3 tif files are in sequence
+    tif_times = [datetime.strptime(os.path.basename(f).split('_')[2].split('.')[0], '%Y%m%d%H%M000').replace(tzinfo=UTC) for f in tif_files]
+    tif_times_sorted = sorted(tif_times)
+    time_diffs = [(tif_times_sorted[i] - tif_times_sorted[i-1]).total_seconds() / 60 for i in range(1, len(tif_times_sorted))]
+
+    if not all([diff == 10 for diff in time_diffs[-(prior_steps-1):]]):
+        raise ValueError("Tif files are not in sequence of 10 minutes interval. Please check the available tif files.")
+
     # Save the tif file list to a json file
     print("Saving tif file list...")
     os.makedirs(os.path.dirname(TIF_FILE_LIST.format(domain=domain.lower())), exist_ok=True)
@@ -99,10 +117,24 @@ def main(config: os.PathLike | str, time: str = None):
         json.dump(tif_files, f, indent=4)
 
     print("Running nowcasting model...")
-    ds = run_nowcasting(cfg, tif_file_list_path, processed_output=True)
+    output_file,ds = run_nowcasting(cfg, tif_file_list_path, processed_output=True)
     if ds:
         print("Nowcasting completed successfully.")
-    return ds
+
+        print("Saving latest_nowcast_available.json...")
+        latest_nowcast_info = {
+            'base_time': (base_time+timedelta(minutes=10)).strftime('%Y%m%d%H%M000'),
+            'file_path': output_file,
+        }
+
+        os.makedirs(os.path.dirname(LATEST_NOWCAST_INFO.format(domain=domain.lower())), exist_ok=True)
+        with open(LATEST_NOWCAST_INFO.format(domain=domain.lower()), 'w') as f:
+            json.dump(latest_nowcast_info, f, indent=4)
+
+    else:
+        print("Nowcasting failed.")
+
+    generate_png_layer(cfg)
 
 
 if __name__ == "__main__":

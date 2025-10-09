@@ -1,0 +1,106 @@
+{
+    "title": "SCAMPR Nowcast Rain Rate",
+    "domain": "kalsel",
+    "baseTimeUtc": "2025-10-09 11:10 UTC",
+    "timeUtc": [
+        "2025-10-09 11:20 UTC (+010min)",
+        "2025-10-09 11:30 UTC (+020min)",
+        "2025-10-09 11:40 UTC (+030min)",
+        "2025-10-09 11:50 UTC (+040min)",
+        "2025-10-09 12:00 UTC (+050min)",
+        "2025-10-09 12:10 UTC (+060min)",
+        "2025-10-09 12:20 UTC (+070min)",
+        "2025-10-09 12:30 UTC (+080min)",
+        "2025-10-09 12:40 UTC (+090min)",
+        "2025-10-09 12:50 UTC (+100min)",
+        "2025-10-09 13:00 UTC (+110min)",
+        "2025-10-09 13:10 UTC (+120min)",
+        "2025-10-09 13:20 UTC (+130min)",
+        "2025-10-09 13:30 UTC (+140min)",
+        "2025-10-09 13:40 UTC (+150min)",
+        "2025-10-09 13:50 UTC (+160min)",
+        "2025-10-09 14:00 UTC (+170min)",
+        "2025-10-09 14:10 UTC (+180min)"
+    ],
+    "timeLocal": [
+        "2025-10-09 19:20 WITA (+010min)",
+        "2025-10-09 19:30 WITA (+020min)",
+        "2025-10-09 19:40 WITA (+030min)",
+        "2025-10-09 19:50 WITA (+040min)",
+        "2025-10-09 20:00 WITA (+050min)",
+        "2025-10-09 20:10 WITA (+060min)",
+        "2025-10-09 20:20 WITA (+070min)",
+        "2025-10-09 20:30 WITA (+080min)",
+        "2025-10-09 20:40 WITA (+090min)",
+        "2025-10-09 20:50 WITA (+100min)",
+        "2025-10-09 21:00 WITA (+110min)",
+        "2025-10-09 21:10 WITA (+120min)",
+        "2025-10-09 21:20 WITA (+130min)",
+        "2025-10-09 21:30 WITA (+140min)",
+        "2025-10-09 21:40 WITA (+150min)",
+        "2025-10-09 21:50 WITA (+160min)",
+        "2025-10-09 22:00 WITA (+170min)",
+        "2025-10-09 22:10 WITA (+180min)"
+    ],
+    "file": [
+        "scampr_steps_kalsel_base202510091110000_valid202510091120000_10.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091130000_20.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091140000_30.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091150000_40.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091200000_50.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091210000_60.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091220000_70.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091230000_80.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091240000_90.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091250000_100.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091300000_110.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091310000_120.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091320000_130.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091330000_140.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091340000_150.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091350000_160.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091400000_170.png",
+        "scampr_steps_kalsel_base202510091110000_valid202510091410000_180.png"
+    ],
+    "bounds": {
+        "overlayTLC": [
+            113.5,
+            -1.0
+        ],
+        "overlayBRC": [
+            117.5,
+            -5.0
+        ]
+    },
+    "legend": {
+        "levels": [
+            0.1,
+            1.0,
+            2.0,
+            5.0,
+            7.0,
+            9.0,
+            10,
+            12,
+            15,
+            20,
+            50,
+            100
+        ],
+        "colors": [
+            "#0000c7",
+            "#0079ff",
+            "#32c8ff",
+            "#78ebff",
+            "#ffffff",
+            "#fff7c0",
+            "#ffe500",
+            "#ff7300",
+            "#ff3f00",
+            "#c80000",
+            "#960000",
+            "#6e0000"
+        ],
+        "units": "mm/hr"
+    }
+}

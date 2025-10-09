@@ -1,7 +1,8 @@
-from download_scampr import download_scampr
-from convert_tiff import convert_tiff
-from run_nowcasting import run_nowcasting
-from generate_png_layer import generate_png_layer
+from utils.download_scampr import download_scampr
+from utils.convert_tiff import convert_tiff
+from utils.run_nowcasting import run_nowcasting
+from utils.generate_png_layer import generate_png_layer
+from utils.read_config import read_run_config, read_path_config
 
 from datetime import datetime, timedelta, UTC
 import yaml
@@ -9,30 +10,17 @@ import json
 import os
 import argparse
 
-DOMAIN_DICT = 'D:\\Projects\\scampr-nowcasting\\domain_boundary.yaml'
-LATEST_FILE_INFO = 'D:\\Projects\\scampr-nowcasting\\data\\latest_file_available.json'
-TIF_FILE_LIST = 'D:\\Projects\\scampr-nowcasting\\data\\tif\\{domain}\\tif_file_list.json'
-LATEST_NOWCAST_INFO = 'D:\\Projects\\scampr-nowcasting\\data\\{domain}\\latest_nowcast_available.json'
-
-
-def read_config(config:os.PathLike|str)->dict:
-    required_keys = ['nc_storage_dir','nc_filename_template','domain','prior_steps','model_config','tif_storage_dir','tif_filename_template','nowcast_output_storage_dir','nowcast_output_filename_template']
-    try:
-        with open(config,'r') as f:
-            cfg = yaml.safe_load(f)
-        for key in required_keys:
-            if key not in cfg:
-                print(f"Error: key '{key}' not found in config.")
-    except FileNotFoundError:
-        raise
-    return cfg
-
 
 def main(config: os.PathLike | str, time: str = None):
-    print("Starting SCAMPR Nowcasting Pipeline...")
-    cfg = read_config(config)
+    cfg = read_run_config(config)
+    domain_dict = cfg.get('domain_info')
+    nc_dir = cfg.get('nc_dir')
+    nc_latest_file_info = cfg.get('nc_latest_file_info')
+    tif_file_list_info = cfg.get('tif_file_list_info')
+    tif_storage_dir = cfg.get('tif_dir')
+    latest_nowcast_info = cfg.get('latest_nowcast_info')
+
     run_mode = cfg.get('run_mode', 'auto')
-    tif_storage_dir = cfg['tif_storage_dir']
     tif_filename_template = cfg['tif_filename_template']
     domain = cfg['domain']
     prior_steps = cfg['prior_steps']
@@ -43,7 +31,7 @@ def main(config: os.PathLike | str, time: str = None):
             base_time = datetime.strptime(time, '%Y%m%d%H%M').replace(tzinfo=UTC)
         else:
             print("Running in auto mode. Getting base time from latest available file.")
-            with open(LATEST_FILE_INFO, 'r') as f:
+            with open(nc_latest_file_info, 'r') as f:
                 latest_file_info = json.load(f)
                 latest_file = latest_file_info['file_path']
                 base_time = datetime.strptime(latest_file_info['time_coverage_start'], '%Y%m%d%H%M000')
@@ -111,25 +99,24 @@ def main(config: os.PathLike | str, time: str = None):
 
     # Save the tif file list to a json file
     print("Saving tif file list...")
-    os.makedirs(os.path.dirname(TIF_FILE_LIST.format(domain=domain.lower())), exist_ok=True)
-    tif_file_list_path = TIF_FILE_LIST.format(domain=domain.lower())
-    with open(tif_file_list_path, 'w') as f:
+    tif_file_list_info = tif_file_list_info.format(domain=domain.lower())
+    with open(tif_file_list_info, 'w') as f:
         json.dump(tif_files, f, indent=4)
 
     print("Running nowcasting model...")
-    output_file,ds = run_nowcasting(cfg, tif_file_list_path, processed_output=True)
+    output_file,ds = run_nowcasting(cfg, tif_file_list_info, processed_output=True)
     if ds:
         print("Nowcasting completed successfully.")
 
         print("Saving latest_nowcast_available.json...")
-        latest_nowcast_info = {
+        latest_nowcast = {
             'base_time': (base_time+timedelta(minutes=10)).strftime('%Y%m%d%H%M000'),
             'file_path': output_file,
         }
 
-        os.makedirs(os.path.dirname(LATEST_NOWCAST_INFO.format(domain=domain.lower())), exist_ok=True)
-        with open(LATEST_NOWCAST_INFO.format(domain=domain.lower()), 'w') as f:
-            json.dump(latest_nowcast_info, f, indent=4)
+        latest_nowcast_info = latest_nowcast_info.format(domain=domain.lower())
+        with open(latest_nowcast_info, 'w') as f:
+            json.dump(latest_nowcast, f, indent=4)
 
     else:
         print("Nowcasting failed.")

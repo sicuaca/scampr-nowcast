@@ -10,23 +10,14 @@ import json
 from datetime import datetime, UTC, timedelta
 import xarray as xr
 import argparse
+try:
+    from read_config import read_run_config
+except ModuleNotFoundError:
+    from utils.read_config import read_run_config
 
 DOMAIN_DICT = 'D:\\Projects\\scampr-nowcasting\\domain_boundary.yaml'
-LATEST_FILE_INFO = 'D:\\Projects\\scampr-nowcasting\\data\\latest_file_available.json'
+LATEST_FILE_INFO = '/data/latest_file_available.json'
 TIF_FILE_LIST = 'D:\\Projects\\scampr-nowcasting\\data\\tif\\{domain}\\tif_file_list.json'
-
-
-def read_config(config: os.PathLike | str) -> dict:
-    required_keys = ['domain', 'model_config', 'tif_storage_dir', 'tif_filename_template']
-    try:
-        with open(config, 'r') as f:
-            cfg = yaml.safe_load(f)
-        for key in required_keys:
-            if key not in cfg:
-                print(f"Error: key '{key}' not found in config.")
-    except FileNotFoundError:
-        raise
-    return cfg
 
 
 def convert_to_dataset(data: np.ndarray, metadata: dict, base_time: datetime, timestep: int,
@@ -95,16 +86,17 @@ def run_nowcasting(config: os.PathLike | str|dict, tif_files: None | os.PathLike
     if isinstance(config, dict):
         cfg = config
     else:
-        cfg = read_config(config)
+        cfg = read_run_config(config)
 
-    domain = cfg['domain'].lower()
-    model_config = cfg['model_config']
+    domain = cfg.get('domain').lower()
+    model_config = cfg.get('model_config')
+    tif_file_list_info = cfg.get('tif_file_list_info', None)
 
     # check tif_files argument input
     if tif_files is not None:
         if isinstance(tif_files, str):
-            tif_file_list_path = tif_files.format(domain=domain)
-            with open(tif_file_list_path, 'r') as f:
+            tif_file_list_info = tif_files.format(domain=domain)
+            with open(tif_file_list_info, 'r') as f:
                 tif_input_files = json.load(f)
         elif isinstance(tif_files, list):
             tif_input_files = tif_files
@@ -112,8 +104,8 @@ def run_nowcasting(config: os.PathLike | str|dict, tif_files: None | os.PathLike
             raise ValueError(
                 "tif_files argument must be a json file path string containing list of tif files path, or a list of file paths.")
     else:
-        tif_file_list_path = TIF_FILE_LIST.format(domain=domain)
-        with open(tif_file_list_path, 'r') as f:
+        tif_file_list_info = tif_file_list_info.format(domain=domain)
+        with open(tif_file_list_info, 'r') as f:
             tif_input_files = json.load(f)
 
     base_time = os.path.basename(tif_input_files[-1]).split('_')[2].split('.')[0]
@@ -164,7 +156,7 @@ def run_nowcasting(config: os.PathLike | str|dict, tif_files: None | os.PathLike
     if processed_output:
         ds = compute_ensemble(ds)
 
-    output_path = cfg.get('nowcast_output_storage_dir')
+    output_path = cfg.get('nowcast_dir')
     output_path = output_path.format(domain=domain.lower())
     os.makedirs(output_path, exist_ok=True)
     filename = cfg.get('nowcast_output_filename_template')
@@ -181,7 +173,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run nowcasting using pysteps.")
     parser.add_argument('-c','--config', type=str, required=True, help="Path to the configuration YAML file.")
     parser.add_argument('--tif_files', type=str, default=None,
-                        help="Path to JSON file containing list of GeoTIFF files or a comma-separated list of file paths. If not provided, it will use the default path in the script.")
+                        help="Path to JSON file containing list of GeoTIFF files or a comma-separated list of file paths. If not provided, it will use the default path in the utils.")
     parser.add_argument('--processed_output', action='store_true',
                         help="If set, the output will not be processed to ensemble mean and probability.")
     args = parser.parse_args()
@@ -195,4 +187,3 @@ if __name__ == '__main__':
 
     ds_nowcast = run_nowcasting(config=args.config, tif_files=tif_files_input,
                                 processed_output=not args.processed_output)
-    print(ds_nowcast)

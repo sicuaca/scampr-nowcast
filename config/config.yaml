@@ -1,0 +1,55 @@
+## Path config
+project_path: D:/Projects/scampr-nowcasting
+config_path: D:/Projects/scampr-nowcasting/config
+status_path: D:/Projects/scampr-nowcasting/status
+data_path: D:/Projects/scampr-nowcasting/data
+log_path: D:/Projects/scampr-nowcasting/log
+
+## Latest file info paths
+domain_info: D:/Projects/scampr-nowcasting/config/domain_boundary.yaml
+nc_latest_file_info: D:/Projects/scampr-nowcasting/status/latest_scampr_file_available.json
+tif_file_list_info: D:/Projects/scampr-nowcasting/status/{domain}_tif_file_list.json
+latest_nowcast_info: D:/Projects/scampr-nowcasting/status/{domain}_latest_nowcast_available.json
+latest_png_info: D:/Projects/scampr-nowcasting/status/{domain}_latest_png_available.json
+
+## Storage paths
+nc_dir: D:/Projects/scampr-nowcasting/data/scampr
+tif_dir: D:/Projects/scampr-nowcasting/data/tif/{domain}
+nowcast_dir: D:/Projects/scampr-nowcasting/data/output/{domain}
+png_layer_dir: D:/Projects/scampr-nowcasting/data/output/{domain}/png/{basetime}
+
+## This part is for setting up the main task
+# run_mode options: auto or manual. If auto, the download_scampr task is already set to run automatically (using cron) separately,
+# the program will check the latest data available from generated latest_file_available.json.
+# If manual, the program will get the current time and try to download the latest data available from the source.
+run_mode: manual
+prior_steps: 12
+local_time: 8
+local_time_code: WITA
+
+## This part is for downloading and processing SCAMPR DATA
+bucket_name: noaa-enterprise-rainrate-pds
+prefix: BLEND/RainRate-Blend-INST/{datestring} #datestring in %Y/%m/%d/%H format
+product: GLB-5
+clip: [25,-25,70,165] #north, south, west, east
+nc_filename_template: scampr_indonesia_{datestring}.nc
+
+## This part is for clipping and converting netCDF to GeoTIFF
+#tif_storage_dir: D:/Projects/scampr-nowcasting/data/tif/{domain}
+tif_filename_template: rrqpe_{domain}_{datestring}.tif
+domain: kalsel #choose from domain_boundary.yaml
+
+## This part is for setting up nowcasting run
+model_config:
+  method: steps
+  n_input_frames: 12
+  n_leadtimes: 18
+  n_ens_members: 20
+  km_per_pixel: 2.0
+  timestep: 10 #in minutes
+  precip_thr: -10.0
+#nowcast_output_storage_dir: D:/Projects/scampr-nowcasting/data/output/{domain}
+nowcast_output_filename_template: scampr_{method}_{domain}_{base_time}.nc
+
+## This part is for setting png layer generation
+#png_output_storage_dir: D:/Projects/scampr-nowcasting/data/output/{domain}/png

@@ -1,6 +1,9 @@
 #!/home/metpublic/PYTHON_VENV/nowcasting_weather/bin/python
 import os
-import sys
+try:
+    from read_config import read_run_config
+except ModuleNotFoundError:
+    from utils.read_config import read_run_config
 
 import argparse
 import boto3
@@ -14,16 +17,6 @@ from datetime import UTC
 import io
 import xarray as xr
 import numpy as np
-
-
-def read_config(config: os.PathLike) -> dict:
-    required_keys = ['bucket_name', 'prefix', 'product', 'nc_storage_dir', 'nc_filename_template']
-    with open(config, 'r') as f:
-        cfg = yaml.safe_load(f)
-    for key in required_keys:
-        if key not in cfg:
-            print(f"Error: key '{key}' not found in config.")
-    return cfg
 
 
 def transform_data(data, clip=None):
@@ -80,7 +73,7 @@ def transform_data(data, clip=None):
         return ds
 
 
-def get_latest_file(bucket, prefixes, substring="GLB-5"):
+def get_latest_file(bucket, prefixes, substring:str|list="GLB-5"):
     s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
 
     for prefix in prefixes:
@@ -91,7 +84,11 @@ def get_latest_file(bucket, prefixes, substring="GLB-5"):
             continue  # coba prefix berikutnya
 
         # filter berdasarkan substring
-        filtered = [obj for obj in contents if substring in obj["Key"]]
+        if isinstance(substring, list):
+            filtered = [obj for obj in contents if all(sub in obj["Key"] for sub in substring)]
+        else:
+            filtered = [obj for obj in contents if substring in obj["Key"]]
+
         if filtered:
             # ambil objek terbaru tanpa sort full list
             latest = max(filtered, key=lambda x: x["LastModified"])
@@ -108,24 +105,24 @@ def download_scampr(config: dict| str | os.PathLike, time: str = None):
     if isinstance(config, dict):
         cfg = config
     else:
-        cfg = read_config(config)
+        cfg = read_run_config(config)
 
     bucket_name = cfg.get('bucket_name')
     clip = cfg.get('clip')
     prefix = cfg.get('prefix').format(datestring=now.strftime('%Y/%m/%d/%H'))
     prefix_1 = cfg.get('prefix').format(datestring=now_1.strftime('%Y/%m/%d/%H'))
-    local_dir = cfg.get('nc_storage_dir')
+    local_dir = cfg.get('nc_dir')
 
     if time:
         time_dt = datetime.strptime(time, "%Y%m%d%H%M000")
         prefix = cfg.get('prefix').format(datestring=time_dt.strftime('%Y/%m/%d/%H'))
-        latest_obj = get_latest_file(bucket_name, [prefix], time)
-        print(f"Found requested time: {latest_obj['Key']}")
+        latest_obj = get_latest_file(bucket_name, [prefix], [time,'GLB-5'])
     else:
         prefixes = [prefix, prefix_1]
         latest_obj = get_latest_file(bucket_name, prefixes)
 
     if latest_obj:
+        print(f"Found requested time: {latest_obj['Key']}")
         print(f"Processing data: {latest_obj['Key']}")
         filename_aws = os.path.basename(latest_obj["Key"])
         timestamp = filename_aws.split("_")[3][1:]
@@ -136,17 +133,29 @@ def download_scampr(config: dict| str | os.PathLike, time: str = None):
         else:
             local_file = os.path.join(local_dir, filename_aws)
 
-        if not os.path.isfile(local_file):
-            s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+        s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+
+        # Cek apakah file lokal sudah ada
+        if os.path.isfile(local_file):
+            file_size = os.path.getsize(local_file)
+
+            # Jika file kecil, re-download
+            if file_size < 700 * 1024:
+                print(f"File size {file_size} bytes is less than 700KB, re-downloading...")
+                obj = s3.get_object(Bucket=bucket_name, Key=latest_obj["Key"])
+                data = io.BytesIO(obj["Body"].read())
+            else:
+                print(f"File already exists: {local_file}, skipping download.")
+                return
+        else:
+            # File belum ada, download
+            print(f"File not found: {local_file}, downloading...")
             obj = s3.get_object(Bucket=bucket_name, Key=latest_obj["Key"])
             data = io.BytesIO(obj["Body"].read())
-        else:
-            print(f"File already exists: {local_file}, skipping download.")
-            return
 
     else:
-        print("No matching files found")
-        data = None
+        raise FileNotFoundError("No matching files found")
+
 
     print("Transforming data to xarray dataset")
     ds = transform_data(data, clip)
@@ -155,8 +164,9 @@ def download_scampr(config: dict| str | os.PathLike, time: str = None):
     file_datestring = datetime.strptime(ds.attrs['time_coverage_start'], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H%M000")
 
     filename = cfg.get('nc_filename_template').format(datestring=file_datestring)
+    os.makedirs(local_dir, exist_ok=True)
     output_file = os.path.join(local_dir, filename)
-    ds.to_netcdf(output_file, format='NETCDF4')
+    ds.to_netcdf(output_file, format='NETCDF4', engine='netcdf4')
 
     if not time:
         print("Writing latest_file_available.json")
@@ -165,7 +175,7 @@ def download_scampr(config: dict| str | os.PathLike, time: str = None):
             "file_path": output_file,
             "time_coverage_start": file_datestring,
         }
-        latest_file = os.path.join(local_dir, "latest_file_available.json")
+        latest_file = cfg.get('nc_latest_file_info',os.path.join(local_dir, "latest_file_available.json"))
         with open(latest_file, 'w') as f:
             json.dump(latest_info, f, indent=4)
 

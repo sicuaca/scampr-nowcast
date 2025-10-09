@@ -5,23 +5,10 @@ import json
 import yaml
 import os
 import argparse
-
-DOMAIN_DICT = 'D:/Projects/scampr-nowcasting/domain_boundary.yaml'
-LATEST_FILE_INFO = 'D:/Projects/scampr-nowcasting/data/latest_file_available.json'
-
-
-def read_config(config: os.PathLike | str) -> dict:
-    required_keys = ['nc_storage_dir', 'nc_filename_template', 'domain', 'tif_storage_dir', 'tif_filename_template']
-    try:
-        with open(config, 'r') as f:
-            cfg = yaml.safe_load(f)
-        for key in required_keys:
-            if key not in cfg:
-                print(f"Error: key '{key}' not found in config.")
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Configuration file not found at {config}")
-    return cfg
-
+try:
+    from read_config import read_run_config
+except ModuleNotFoundError:
+    from utils.read_config import read_run_config
 
 def read_domain_dictionary(domain: os.PathLike | str) -> dict:
     try:
@@ -38,25 +25,31 @@ def convert_tiff(config: dict | str | os.PathLike, time: str = None):
     if isinstance(config, dict):
         cfg = config
     else:
-        cfg = read_config(config)
+        cfg = read_run_config(config)
 
-    domain_dict = read_domain_dictionary(DOMAIN_DICT)
-    nc_dir = cfg['nc_storage_dir']
-    nc_filename = cfg['nc_filename_template']
-    tif_dir = cfg['tif_storage_dir']
-    tif_filename = cfg['tif_filename_template']
+    nc_dir = cfg.get('nc_dir')
+    nc_filename = cfg.get('nc_filename_template')
+    tif_dir = cfg.get('tif_dir')
+    tif_filename = cfg.get('tif_filename_template')
     domain = cfg.get('domain', 'Indonesia')
+    nc_latest_file_info = cfg.get('nc_latest_file_info')
+
+    domain_info = cfg.get("domain_info")
+    domain_dict = read_domain_dictionary(domain_info)
     boundary = domain_dict.get(domain).get('boundary')
 
     if not time:
         try:
-            with open(LATEST_FILE_INFO) as f:
+            with open(nc_latest_file_info) as f:
                 latest_file_available = json.load(f)
                 latest_file_path = latest_file_available.get('file_path')
         except FileNotFoundError:
-            raise FileNotFoundError(f"Latest file info not found at {LATEST_FILE_INFO}")
+            raise FileNotFoundError(f"Latest file info not found at {nc_latest_file_info}")
     else:
-        file_datestring = datetime.strptime(time, '%Y%m%d%H%M000').strftime('%Y%m%d%H%M000')
+        try:
+            file_datestring = datetime.strptime(time, '%Y%m%d%H%M000').strftime('%Y%m%d%H%M000')
+        except ValueError:
+            file_datestring = datetime.strptime(time, '%Y%m%d%H%M').strftime('%Y%m%d%H%M000')
         latest_file_path = f"{nc_dir}/{nc_filename.format(datestring=file_datestring)}"
 
     print(f"Processing file: {latest_file_path}")
